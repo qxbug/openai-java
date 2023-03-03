@@ -179,12 +179,13 @@ public class OpenAiServiceImpl implements OpenAiService {
             // 正则匹配结果
             Matcher m = Pattern.compile("\"content\":\"(.*?)\"").matcher(msgResult);
             if(m.find()) {
-                // 过滤开头多余\n
-                if(!"\\n".equals(m.group(1)) && !flag) {
+                // 将\n和\t替换为html中的换行和制表
+                String data = m.group(1).replace("\\n", "\n")
+                        .replace("\\t", "\t");
+                // 过滤AI回复开头的换行
+                if(!data.matches("\\n+") && !flag) {
                     flag = true;
                 }
-                // 将\n和\t替换为html中的换行和制表
-                String data = m.group(1).replace("\\n", "\n").replace("\\t", "\t");
                 // 发送信息
                 if(flag) {
                     webSocketServer.sendMessage(data);
