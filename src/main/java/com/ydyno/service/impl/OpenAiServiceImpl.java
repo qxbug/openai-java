@@ -169,12 +169,16 @@ public class OpenAiServiceImpl implements OpenAiService {
         String line;
         BufferedReader reader = new BufferedReader(new InputStreamReader(result.bodyStream()));
         boolean flag = false;
+        boolean printErrorMsg = false;
         while((line = reader.readLine()) != null){
             String msgResult = UnicodeUtil.toString(line);
             // 正则匹配错误信息
             if(msgResult.contains("\"error\":")){
-                reader.close();
-                throw new RuntimeException("请求ChatGPT官方服务出错，请稍后再试");
+                printErrorMsg = true;
+            }
+            // 如果出错，打印错误信息
+            if (printErrorMsg) {
+                log.error(msgResult);
             }
             // 正则匹配结果
             Matcher m = Pattern.compile("\"content\":\"(.*?)\"").matcher(msgResult);
@@ -192,7 +196,12 @@ public class OpenAiServiceImpl implements OpenAiService {
                 }
             }
         }
+        // 关闭流
         reader.close();
+        // 如果出错，抛出异常
+        if (printErrorMsg){
+            throw new RuntimeException("请求ChatGPT官方服务出错，请稍后再试");
+        };
     }
 
     /**

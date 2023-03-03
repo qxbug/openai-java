@@ -110,6 +110,24 @@ public class WebSocketServer {
         this.session.getBasicRemote().sendText(message);
     }
 
+    /**
+     * 群发自定义消息
+     */
+    public void groupMessage(String message, @PathParam("sid") String sid) {
+        for (WebSocketServer item : webSocketSet) {
+            try {
+                //这里可以设定只推送给这个sid的，为null则全部推送
+                if (sid == null) {
+                    item.sendMessage(message);
+                } else if (item.sid.equals(sid)) {
+                    item.sendMessage(message);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public static synchronized int getOnlineCount() {
         return onlineCount;
     }
